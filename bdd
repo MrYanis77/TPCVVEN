@@ -1,1 +1,124 @@
+#------------------------------------------------------------
+# Script MySQL.
+#------------------------------------------------------------
 
+#------------------------------------------------------------
+# Table: SejourVacances
+#------------------------------------------------------------
+
+CREATE TABLE SejourVacances (
+    ID                INT NOT NULL,
+    Date_de_debut     DATE NOT NULL,
+    Date_de_fin       DATE NOT NULL,
+    Tarif             INT NOT NULL,
+    Quotient_Familial INT NOT NULL,
+    Statut            BOOLEAN NOT NULL,
+    CONSTRAINT SejourVacances_PK PRIMARY KEY (ID)
+) ENGINE=InnoDB;
+
+
+#------------------------------------------------------------
+# Table: utilisateur
+#------------------------------------------------------------
+
+CREATE TABLE utilisateur (
+    ID                  INT NOT NULL PRIMARY KEY,
+    username            VARCHAR(50) NOT NULL,
+    mdp                 VARCHAR(255) NOT NULL,
+    Numero_de_telephone INT NOT NULL,
+    date_creation       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    date_modification   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    date_suppression    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+
+#------------------------------------------------------------
+# Table: ReservationSejour
+#------------------------------------------------------------
+
+CREATE TABLE ReservationSejour (
+    ID                  INT NOT NULL,
+    Date_de_Reservation DATE NOT NULL,
+    Statut              BOOLEAN NOT NULL,
+    CONSTRAINT ReservationSejour_PK PRIMARY KEY (ID),
+    CONSTRAINT fk_user FOREIGN KEY (ID) REFERENCES utilisateur(ID)
+) ENGINE=InnoDB;
+
+
+#------------------------------------------------------------
+# Table: PeriodeConges
+#------------------------------------------------------------
+
+CREATE TABLE PeriodeConges (
+    ID            INT NOT NULL,
+    Date_de_debut DATE NOT NULL,
+    Date_de_fin   DATE NOT NULL,
+    Description   VARCHAR(50) NOT NULL,
+    CONSTRAINT PeriodeConges_PK PRIMARY KEY (ID)
+) ENGINE=InnoDB;
+
+
+#------------------------------------------------------------
+# Table: VillageVacances
+#------------------------------------------------------------
+
+CREATE TABLE VillageVacances (
+    ID               INT NOT NULL,
+    Nom              VARCHAR(50) NOT NULL,
+    emplacement      VARCHAR(50) NOT NULL,
+    ID_PeriodeConges INT NOT NULL,
+    CONSTRAINT VillageVacances_PK PRIMARY KEY (ID),
+    CONSTRAINT VillageVacances_PeriodeConges_FK FOREIGN KEY (ID_PeriodeConges) REFERENCES PeriodeConges(ID)
+) ENGINE=InnoDB;
+
+
+#------------------------------------------------------------
+# Table: ServiceSurPlace
+#------------------------------------------------------------
+
+CREATE TABLE ServiceSurPlace (
+    ID          INT NOT NULL,
+    Description VARCHAR(50) NOT NULL,
+    CONSTRAINT ServiceSurPlace_PK PRIMARY KEY (ID)
+) ENGINE=InnoDB;
+
+
+#------------------------------------------------------------
+# Table: EvenementProfessionnel
+#------------------------------------------------------------
+
+CREATE TABLE EvenementProfessionnel (
+    ID            INT NOT NULL,
+    Date_de_debut DATE NOT NULL,
+    Date_de_fin   DATE NOT NULL,
+    Description   INT NOT NULL,
+    CONSTRAINT EvenementProfessionnel_PK PRIMARY KEY (ID)
+) ENGINE=InnoDB;
+
+
+#------------------------------------------------------------
+# Table: DemandeReservation
+#------------------------------------------------------------
+
+CREATE TABLE DemandeReservation (
+    ID                               INT NOT NULL,
+    Date_de_Demande                  DATE NOT NULL,
+    Nom_du_demandeur                 VARCHAR(50) NOT NULL,
+    Numero_de_telephone_du_Demandeur INT NOT NULL,
+    CONSTRAINT DemandeReservation_PK PRIMARY KEY (ID)
+) ENGINE=InnoDB;
+
+
+#------------------------------------------------------------
+# Table: reservation
+#------------------------------------------------------------
+
+CREATE TABLE reservation (
+    ID                   INT NOT NULL,
+    ID_ReservationSejour INT NOT NULL,
+    ID_AgentEN           INT NOT NULL,
+    CONSTRAINT reservation_PK PRIMARY KEY (ID, ID_ReservationSejour, ID_AgentEN),
+    CONSTRAINT reservation_VillageVacances_FK FOREIGN KEY (ID) REFERENCES VillageVacances(ID),
+    CONSTRAINT reservation_ReservationSejour0_FK FOREIGN KEY (ID_ReservationSejour) REFERENCES ReservationSejour(ID),
+    CONSTRAINT reservation_utilisateur_FK FOREIGN KEY (ID) REFERENCES utilisateur(ID)
+) ENGINE=InnoDB;
