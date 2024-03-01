@@ -1,0 +1,83 @@
+
+//Pour l'instant tout fonctionne mais je rajouterais plus tard plus tard une méthode pour vérifier le mdp
+
+<?php
+
+namespace App\Controllers;
+
+use CodeIgniter\Controller;
+use App\Models\Session;
+use App\Models\SiteReservationModel;
+
+class Connexion extends Controller
+{
+    public function index()
+    {
+        helper('form');
+
+        if (!$this->validate([
+            'login' => 'required|min_length[4]|max_length[20]',
+            'password' => 'required|min_length[4]|max_length[30]'
+        ], [
+            'login' => [
+                'required' => 'Merci d\'indiquer un login.',
+                'min_length' => 'Merci d\'indiquer un login d\'au moins 4 caractères',
+                'max_length' => 'La longueur du login ne peut pas dépasser 20 caractères'
+            ],
+            'password' => [
+                'required' => 'Merci d\'indiquer votre mot de passe',
+                'min_length' => 'Merci d\'indiquer un mot de passe d\'au moins 4 caractères',
+                'max_length' => 'La longueur du mot de passe ne peut pas dépasser 30 caractères'
+            ]
+        ])) {
+            echo view('template/header');
+            echo view('form/login', ['validation' => $this->validator]);
+            echo view('template/footer');
+        } else {
+            if($this->verifyLoginPassword()){
+               return redirect()->to(base_url('index.php/PageUser')); 
+            }
+        }
+    }
+
+    private function verifyLoginPassword()
+    {
+        // Récupération des données de la vue login
+        $login = $this->request->getPost('login');
+        $password = $this->request->getPost('password');
+        $SiteReservationModel = new SiteReservationModel();
+        //Vérification du login et du mdp avec la méthode countIdUserValide 
+        //Attention! le premier utilisateur dans la table utilisateur est l'admin
+        $verif = $SiteReservationModel->countIdUserValide($login, $password);
+        // vérification si le mot de passe existe
+        $verif_login = $SiteReservationModel->countUserLogin($login);
+
+        //convertion vérif de tableau à int
+        if (intval($verif) != 1) {
+            if ($verif_login != 1) {
+                $this->validator->setError("login", "Votre nom d'utilisateur n'existe pas !");
+            } else {
+                $this->validator->setError("password", "Le mot de passe est incorrect !");
+            }
+            echo view('template/header');
+            echo view('form/login', ['validation' => $this->validator]);
+            echo view('template/footer');
+            return false;
+        } else {
+            // Création de la session
+            Session::initSession($SiteReservationModel->getIdUser($login)[0]['id']);
+            return true;
+        }
+    }
+
+    public function deconnexion()
+    {
+        Session::startSession();
+        if (Session::verifySession()) {
+            Session::destructSession();
+        }
+        return redirect()->to(base_url('index.php/Connexion'));
+    }
+}
+
+?>
