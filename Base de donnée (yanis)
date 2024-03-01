@@ -1,0 +1,90 @@
+J'ai un peu modifier la bdd 
+
+DROP TABLE IF EXISTS "SejourVacances";
+CREATE TABLE SejourVacances (
+    ID                INTEGER NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    Date_de_debut     DATE NOT NULL,
+    Date_de_fin       DATE NOT NULL,
+    Tarif             INT NOT NULL,
+    Quotient_Familial INT NOT NULL,
+    Statut            BOOLEAN NOT NULL
+);
+
+
+
+DROP TABLE IF EXISTS "utilisateur";
+CREATE TABLE utilisateur (
+    ID                  SERIAL NOT NULL PRIMARY KEY,
+    prenom              VARCHAR(50) NOT NULL,
+    nom                 VARCHAR(50) NOT NULL,
+    mail                VARCHAR(50) NOT NULL,
+    login               VARCHAR(255) NOT NULL,
+    mdp                 VARCHAR(255) NOT NULL,
+    Numero_de_telephone VARCHAR(50) NOT NULL,
+    date_creation       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    date_modification   TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+    date_suppression    TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP
+) ;
+
+
+DROP TABLE IF EXISTS "ReservationSejour";
+
+CREATE TABLE ReservationSejour (
+    ID                  SERIAL NOT NULL PRIMARY KEY,
+    Date_de_Reservation DATE NOT NULL,
+    Statut              BOOLEAN NOT NULL,
+    CONSTRAINT fk_user FOREIGN KEY (ID) REFERENCES utilisateur(ID)
+);
+
+
+DROP TABLE IF EXISTS "PeriodeConges";
+CREATE TABLE PeriodeConges (
+    ID            SERIAL NOT NULL PRIMARY KEY,
+    Date_de_debut DATE NOT NULL,
+    Date_de_fin   DATE NOT NULL,
+    Description   VARCHAR(50) NOT NULL
+);
+
+
+DROP TABLE IF EXISTS "VillageVacances";
+
+CREATE TABLE VillageVacances (
+    ID               SERIAL NOT NULL PRIMARY KEY,
+    Nom              VARCHAR(50) NOT NULL,
+    emplacement      VARCHAR(50) NOT NULL,
+    ID_PeriodeConges INT NOT NULL,
+    CONSTRAINT VillageVacances_PeriodeConges_FK FOREIGN KEY (ID_PeriodeConges) REFERENCES PeriodeConges(ID)
+);
+
+
+DROP TABLE IF EXISTS "ServiceSurPlaces";
+CREATE TABLE ServiceSurPlace (
+    ID          SERIAL NOT NULL PRIMARY KEY,
+    Description VARCHAR(50) NOT NULL
+);
+
+DROP TABLE IF EXISTS "EvenementProfessionnel";
+CREATE TABLE EvenementProfessionnel (
+    ID            SERIAL NOT NULL PRIMARY KEY,
+    Date_de_debut DATE NOT NULL,
+    Date_de_fin   DATE NOT NULL,
+    Description   INT NOT NULL
+);
+
+DROP TABLE IF EXISTS "DemandeReservation";
+CREATE TABLE DemandeReservation (
+    ID                               SERIAL NOT NULL PRIMARY KEY,
+    Date_de_Demande                  DATE NOT NULL,
+    Nom_du_demandeur                 VARCHAR(50) NOT NULL,
+    Numero_de_telephone_du_Demandeur INT NOT NULL
+);
+
+DROP TABLE IF EXISTS "reservation";
+CREATE TABLE reservation (
+    ID                   SERIAL NOT NULL PRIMARY KEY,
+    ID_ReservationSejour INT NOT NULL,
+    ID_AgentEN           INT NOT NULL,
+    CONSTRAINT reservation_VillageVacances_FK FOREIGN KEY (ID) REFERENCES VillageVacances(ID),
+    CONSTRAINT reservation_ReservationSejour0_FK FOREIGN KEY (ID_ReservationSejour) REFERENCES ReservationSejour(ID),
+    CONSTRAINT reservation_utilisateur_FK FOREIGN KEY (ID) REFERENCES utilisateur(ID)
+);
