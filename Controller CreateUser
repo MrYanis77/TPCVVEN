@@ -1,0 +1,64 @@
+<?php
+namespace App\Controllers;
+
+use CodeIgniter\Controller;
+use App\Models\SiteReservationModel;
+use App\Models\Session; // Assurez-vous d'importer la classe Session
+
+class CreateUser extends Controller
+{
+    /**
+     * Vérifie si les champs manquants du formulaire sont bien remplis
+     * 
+     * @param void
+     * @return string|object  
+     * - string retourne la vue avec les erreurs
+     * - object redirige sur le contrôleur home.
+     */
+    public function index()
+    {
+        helper('form');
+
+        echo view('template/header');
+        echo view('form/inscription');
+        echo view('template/footer');
+    }
+
+    public function enregistrement()
+    {
+        // Récupération des données du formulaire
+        $prenom = $this->request->getPost('prenom');
+        $nom = $this->request->getPost('nom');
+        $login = $this->request->getPost('login');
+        $email = $this->request->getPost('email');
+        $numero_de_telephone = $this->request->getPost('num_tel');
+        $mdp = $this->request->getPost('password');
+
+        try {
+            // Création d'un tableau avec les données à insérer
+            $reservation_model = new SiteReservationModel(); 
+            $verif_login = (int)$reservation_model->countUserLogin($login)[0]['count'];
+            if ($verif_login >= 1) {
+                return redirect()->back()->with('error', 'Ce login existe déjà.');
+            }
+
+            $insert = $reservation_model->insertUser($nom, $prenom, $login, $numero_de_telephone, $email, $mdp);
+            if ($insert) {
+                $userId = $reservation_model->getIdUser($login); // Récupération de l'ID de l'utilisateur nouvellement inséré
+                if (!empty($userId)) {
+                    Session::startSession();
+                    Session::initSession($userId[0]['id']); // Initialisation de la session avec l'ID de l'utilisateur
+                    // Redirection vers la page d'accueil ou autre
+                    return redirect()->to(base_url('index.php/PageUser'));
+                } else {
+                    return redirect()->back()->with('error', 'Échec de l\'enregistrement');
+                }
+            } else {
+                return redirect()->back()->with('error', 'Échec de l\'enregistrement');
+            }
+        } catch (\Exception $ex) {
+            return redirect()->back()->with('error', 'Échec de l\'enregistrement');
+        }
+    }
+}
+?>
