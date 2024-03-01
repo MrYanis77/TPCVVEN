@@ -1,3 +1,6 @@
+
+//Les mots de passes ne sont pas encore crypter je le ferais plus tard
+
 <?php
 namespace App\Controllers;
 
